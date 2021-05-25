@@ -1,4 +1,10 @@
 def preprocessamento(df, cols_numericas, cols_categoricas):
+#####################################################################################################
+#Purpose: This function will clean an dataframe using MinMax, ohe-hot-encoding and StandardScaler
+#
+#Author : Gustavo Rover
+#
+#####################################################################################################
     #Se a variável tiver mais do que 80% dos dados faltantes, iremos deletar a coluna;
     #Se a variável for numérica, iremos preencher com a média;
     #Se a variável for categórica, iremos preencher com a moda.
