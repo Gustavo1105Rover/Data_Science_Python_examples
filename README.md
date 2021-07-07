@@ -1,2 +1,8 @@
 # Data_science_PYTHON_examples
-Examples for Data Science
+My Data Science analisis 
+
+#Decision trees
+#KNN
+#Linear Regresión
+#Logístics regresión
+#Data pré processing
