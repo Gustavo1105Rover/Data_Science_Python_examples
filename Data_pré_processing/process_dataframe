@@ -1,0 +1,62 @@
+def preprocessamento(df, cols_numericas, cols_categoricas):
+#####################################################################################################
+#Purpose: This function will clean an dataframe using MinMax, ohe-hot-encoding and StandardScaler
+#
+#Author : Gustavo Rover
+#
+#####################################################################################################
+    #Se a variável tiver mais do que 80% dos dados faltantes, iremos deletar a coluna;
+    #Se a variável for numérica, iremos preencher com a média;
+    #Se a variável for categórica, iremos preencher com a moda.
+    dff = df.copy()
+    temp = (df.isnull().sum() / df.shape[0]) >= 0.8
+    variaveis_80percFaltantes = temp.loc[temp == True].index.tolist()
+    for v in variaveis_80percFaltantes:
+        dff = dff.drop(v, axis = 1)
+        
+    cols_numericas = list(set(cols_numericas).intersection(set(dff.columns.tolist())))
+    cols_categoricas = list(set(cols_categoricas).intersection(set(dff.columns.tolist())))
+        
+    for v in cols_numericas:
+        dff[v] = dff[v].fillna(dff[v].mean())
+        
+    for v in cols_categoricas:
+        mode_v = dff[v].value_counts().idxmax()
+        dff[v] = dff[v].fillna(mode_v)
+    
+    
+    #Aplique uma transformação "MinMax" na variável 'tempo_educacao'e uma transformação "StandardScaler" na variável 'horas_por_semana'  
+
+    # Instantiate MinMaxScaler
+    MM_scaler = MinMaxScaler()
+    # Fit MM_scaler 
+    MM_scaler.fit(dff[['tempo_educacao']])
+    # Transform the data using the fitted scaler
+    dff['tempo_educacao'] = MM_scaler.transform(dff[['tempo_educacao']])
+    # Instantiate StandardScaler
+    ss_scaler = StandardScaler()  
+    # Fit SS_scaler 
+    ss_scaler.fit(dff[['horas_por_semana']]) 
+    # Transform the data using the fitted scaler
+    dff['horas_por_semana'] = ss_scaler.transform(dff[['horas_por_semana']])
+    
+    #Aplique ohe-hot-encoding nas variáveis 'estado_civil', 'cor' e 'sexo'
+    dic_variavelSexo = {"Male":0, "Female":1}
+    dic_variavelCor = {"White":0, "Black":1, "Other":2, "Asian-Pac-Islander":3, "Amer-Indian-Eskimo":4}
+    dic_variavelEC = {"Never-married":0, "Married-civ-spouse":1, "Divorced":2, "Separated":3, "Married-AF-spouse":4, "Widowed":5, "Married-spouse-absent":6}
+    dff['sexo']          = dff.sexo.map(dic_variavelSexo)
+    dff['cor']           = dff.cor.map(dic_variavelCor)
+    dff['estado_civil']  = dff.estado_civil.map(dic_variavelEC)
+    
+    #Detecte e elimine os outliers da variável 'idade'
+    #primeiramente, calculamos o intervalo interquartil
+
+    iqr = np.percentile(dff.idade, 75) - np.percentile(dff.idade, 25)
+    limite_inf = np.maximum(np.percentile(dff.idade, 25) - 1.5 * iqr, np.min(dff.idade))
+    limite_sup = np.minimum(np.percentile(dff.idade, 75) + 1.5 * iqr, np.max(dff.idade))
+    
+    dff['outlier_idade']= np.where((dff.idade < limite_inf) | (dff.idade > limite_sup), 1, 0)
+    #dff['outlier_idade']=dff.idade=0
+    
+    
+    return dff
